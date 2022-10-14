@@ -109,6 +109,12 @@ class DropArea extends HTMLElement {
       })
     );
 
+    /* this.shadowRoot
+      .querySelector(".drop-area")
+      .classList.add("drop-area-hidden"); */
+  }
+
+  hide() {
     this.shadowRoot
       .querySelector(".drop-area")
       .classList.add("drop-area-hidden");

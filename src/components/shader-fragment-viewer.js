@@ -16,7 +16,6 @@ class ShaderViewer extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.init();
 
     this.shadowRoot.addEventListener(
       "file-loaded",
@@ -30,7 +29,14 @@ class ShaderViewer extends HTMLElement {
 
   onFileDropped(e) {
     const { fileContent } = e.detail;
-    if (fileContent) this.fragmentShader = fileContent;
+    if (fileContent) {
+      this.fragmentShader = fileContent;
+
+      const dropArea = this.shadowRoot.querySelector("drop-area");
+      dropArea.hide();
+
+      this.init();
+    }
   }
 
   render() {

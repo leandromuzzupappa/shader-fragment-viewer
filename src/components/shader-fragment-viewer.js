@@ -1,5 +1,15 @@
 import * as THREE from "three";
 
+/* TODO para el lenny del futuro
+      - [] armar bien la parte de three y persistir
+      - [] poder persistir el shader
+      - [x] poder cambiar el shader sin tener que recargar la pagina
+      - [] pensar mas todos 💩
+
+      - [] Hay algunos shaders que se rompen, *checkear el shader vertex*
+     
+*/
+
 class ShaderViewer extends HTMLElement {
   constructor() {
     super();
@@ -28,18 +38,17 @@ class ShaderViewer extends HTMLElement {
       "file-loaded",
       this.onFileDropped.bind(this)
     );
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "o") {
+        const dropArea = this.shadowRoot.querySelector("drop-area");
+        dropArea.show();
+      }
+    });
   }
 
   init() {
     console.log("init");
-
-    /* TODO para el lenny del futuro
-      - armar bien la parte de three y persistir
-      - poder persistir el shader
-      - poder cambiar el shader sin tener que recargar la pagina
-      - pensar mas todos 💩
-     
-    */
 
     const canvas = this.shadowRoot.querySelector(".pepitos");
     const renderer = new THREE.WebGLRenderer({ canvas });
@@ -118,9 +127,8 @@ class ShaderViewer extends HTMLElement {
     this.shadowRoot.innerHTML = /*html*/ `
       <style>${ShaderViewer.styles}</style>
       <div class="shader-viewer">
-        <canvas class="pepitos"></canvas>
-
         <drop-area></drop-area>
+        <canvas class="pepitos"></canvas>
       </div>
     `;
   }

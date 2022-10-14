@@ -4,6 +4,7 @@ class DropArea extends HTMLElement {
     this.attachShadow({ mode: "open" });
 
     this.file = null;
+    this.msg = "Load fragment shader";
   }
 
   static get styles() {
@@ -114,6 +115,14 @@ class DropArea extends HTMLElement {
       .classList.add("drop-area-hidden"); */
   }
 
+  show() {
+    this.shadowRoot
+      .querySelector(".drop-area")
+      .classList.remove("drop-area-hidden");
+
+    this.dropAreaStatus.textContent = this.msg;
+  }
+
   hide() {
     this.shadowRoot
       .querySelector(".drop-area")
@@ -125,7 +134,7 @@ class DropArea extends HTMLElement {
         <style>${DropArea.styles}</style>
         <section class="drop-area">
           <span class="drop-area-status">
-            Drop a <br /> fragment shader <br /> file here
+            ${this.msg}
           </span>
           <div class="drop-zone"></div>
         </section>

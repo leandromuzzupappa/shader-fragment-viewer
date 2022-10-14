@@ -2,6 +2,8 @@ class ShaderViewer extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+
+    this.fragmentShader = null;
   }
 
   static get styles() {
@@ -15,16 +17,26 @@ class ShaderViewer extends HTMLElement {
   connectedCallback() {
     this.render();
     this.init();
+
+    this.shadowRoot.addEventListener(
+      "file-loaded",
+      this.onFileDropped.bind(this)
+    );
   }
 
   init() {
     console.log("init");
   }
 
+  onFileDropped(e) {
+    const { fileContent } = e.detail;
+    if (fileContent) this.fragmentShader = fileContent;
+  }
+
   render() {
     this.shadowRoot.innerHTML = /*html*/ `
       <style>${ShaderViewer.styles}</style>
-      <div>
+      <div class="shader-viewer">
         <h1>Shader Fragment Viewer</h1>
 
         <drop-area></drop-area>

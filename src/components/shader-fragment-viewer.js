@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import Sizes from "./utils/Sizes";
 
 /* TODO para el lenny del futuro
       - [] armar bien la parte de three y persistir

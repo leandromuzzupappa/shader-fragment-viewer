@@ -8,11 +8,11 @@ export default class Mesh {
     this.app = new App();
     this.sizes = this.app.sizes;
     this.scene = this.app.scene;
-    this.camera = this.app.camera;
-    this.renderer = this.app.renderer;
     this.fragmentShader = this.app.fragmentShader;
+    this.time = this.app.time;
 
     this.setPlane();
+    window.addEventListener("mousemove", (event) => this.onMouseMove(event));
   }
 
   setPlane() {
@@ -46,5 +46,15 @@ export default class Mesh {
   setMesh() {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
+  }
+
+  onMouseMove(event) {
+    this.uniforms.u_mouse.value.x = event.clientX;
+    this.uniforms.u_mouse.value.y = event.clientY;
+  }
+
+  update() {
+    this.uniforms.u_time.value += this.time.delta / 150;
+    console.log(this.uniforms);
   }
 }

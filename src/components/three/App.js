@@ -20,12 +20,12 @@ export default class App {
 
     this.canvas = _canvas;
     this.scene = new THREE.Scene();
-
-    this.sizes = new Sizes();
-    this.camera = new Camera();
-    this.renderer = new Renderer();
-    this.mesh = new Mesh();
     this.time = new Time();
+    this.sizes = new Sizes();
+
+    this.camera = new Camera();
+    this.mesh = new Mesh();
+    this.renderer = new Renderer();
 
     window.addEventListener("update", () => this.update());
     window.addEventListener("resize", () => this.resize());
@@ -34,5 +34,6 @@ export default class App {
   resize() {}
   update() {
     this.renderer.update();
+    this.mesh.update();
   }
 }

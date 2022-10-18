@@ -1,4 +1,5 @@
-import App from ".";
+import * as THREE from "three";
+import App from "./App";
 
 export default class Camera {
   constructor() {
@@ -11,16 +12,17 @@ export default class Camera {
   }
 
   createPerspectiveCamera() {
-    this.perspectiveCamera = new Three.PerspectiveCamera(
+    this.perspectiveCamera = new THREE.PerspectiveCamera(
       35,
       this.sizes.width / this.sizes.height,
       0.1,
       100
     );
+    this.perspectiveCamera.position.z = 2;
 
     this.scene.add(this.perspectiveCamera);
   }
 
-  resize();
-  update();
+  resize() {}
+  update() {}
 }

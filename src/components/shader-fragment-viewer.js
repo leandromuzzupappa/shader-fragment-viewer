@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Sizes from "./utils/Sizes";
 
 /* TODO para el lenny del futuro
       - [] armar bien la parte de three y persistir
@@ -11,13 +12,6 @@ import * as THREE from "three";
 */
 
 class ShaderViewer extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-
-    this.fragmentShader = null;
-  }
-
   static get styles() {
     return /*css*/ `
       :host {
@@ -29,6 +23,13 @@ class ShaderViewer extends HTMLElement {
         height: 100vh;
       }
     `;
+  }
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+
+    this.fragmentShader = null;
   }
 
   connectedCallback() {
@@ -50,8 +51,11 @@ class ShaderViewer extends HTMLElement {
   init() {
     console.log("init");
 
-    const canvas = this.shadowRoot.querySelector(".pepitos");
-    const renderer = new THREE.WebGLRenderer({ canvas });
+    this.canvas = this.shadowRoot.querySelector(".pepitos");
+    this.scene = new THREE.Scene();
+    this.sizes = new Sizes();
+
+    const renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     const camera = new THREE.PerspectiveCamera(
@@ -62,7 +66,7 @@ class ShaderViewer extends HTMLElement {
     );
     camera.position.z = 2;
 
-    const scene = new THREE.Scene();
+    /* const scene = new THREE.Scene(); */
 
     const geometry = new THREE.PlaneGeometry(
       window.innerWidth,

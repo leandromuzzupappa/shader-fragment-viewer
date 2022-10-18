@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import App from "./three/App";
 
 /* TODO para el lenny del futuro
       - [] armar bien la parte de three y persistir
@@ -50,32 +50,34 @@ class ShaderViewer extends HTMLElement {
   init() {
     console.log("init");
 
-    this.canvas = this.shadowRoot.querySelector(".pepitos");
-    this.scene = new THREE.Scene();
-    this.sizes = new Sizes();
+    const canvas = this.shadowRoot.querySelector("canvas");
+    this.app = new App(canvas, this.fragmentShader);
 
-    const renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // this.canvas = this.shadowRoot.querySelector(".pepitos");
+    // this.scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
-    camera.position.z = 2;
+    // const renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+    // renderer.setSize(window.innerWidth, window.innerHeight);
 
-    /* const scene = new THREE.Scene(); */
+    // const camera = new THREE.PerspectiveCamera(
+    //   75,
+    //   window.innerWidth / window.innerHeight,
+    //   0.1,
+    //   1000
+    // );
+    // camera.position.z = 2;
 
-    const geometry = new THREE.PlaneGeometry(
-      window.innerWidth,
-      window.innerHeight
-    );
-    const uresolutionForPlane = /*glsl*/ `
-        void main() {
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `;
+    // const scene = new THREE.Scene();
+
+    // const geometry = new THREE.PlaneGeometry(
+    //   window.innerWidth,
+    //   window.innerHeight
+    // );
+    // const uresolutionForPlane = /*glsl*/ `
+    //     void main() {
+    //       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    //   }
+    // `;
 
     // const geometry = new THREE.BoxGeometry(1, 1, 1);
     // const uresolutionForBoxes = /*glsl*/`
@@ -86,7 +88,7 @@ class ShaderViewer extends HTMLElement {
     //   }
     // `;
 
-    const uniforms = {
+    /* const uniforms = {
       u_resolution: {
         type: "vec2",
         value: new THREE.Vector2(window.innerWidth, window.innerHeight),
@@ -111,7 +113,7 @@ class ShaderViewer extends HTMLElement {
       requestAnimationFrame(render);
     }
 
-    requestAnimationFrame(render);
+    requestAnimationFrame(render); */
   }
 
   onFileDropped(e) {

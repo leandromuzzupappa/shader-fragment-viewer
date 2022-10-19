@@ -55,6 +55,5 @@ export default class Mesh {
 
   update() {
     this.uniforms.u_time.value += this.time.delta / 150;
-    console.log(this.uniforms);
   }
 }

@@ -12,8 +12,6 @@ export default class App {
       return App.instance;
     }
 
-    console.log("lenny");
-
     App.instance = this;
 
     this.fragmentShader = _fragmentShader;

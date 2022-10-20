@@ -1,0 +1,41 @@
+<section class="drop-area">
+          <span class="drop-area-status">
+            ${this.msg}
+          </span>
+          <div class="drop-zone"></div>
+        </section>
+
+.drop-area {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,.8);
+          display: grid;
+          place-items: center;
+          display: none;
+          
+        }
+
+        .drop-zone {
+          position: absolute;
+          width: 300px;
+          height: 300px;
+          background: var(--pantone-winner-2022);
+          border-radius: 10px;
+        }
+
+        .drop-area-status {
+          position: relative;
+          text-align: center;
+          z-index: 1;
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #fff;
+          pointer-events: none;
+        }
+
+        .drop-area-hidden {
+          display: none;
+        }

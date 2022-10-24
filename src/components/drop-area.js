@@ -75,6 +75,16 @@ class DropArea extends HTMLElement {
           font-weight: 400;
         }
 
+        .modal main input {
+          display: none;
+        }
+
+        .modal main label {
+          cursor: pointer;
+          color: var(--clr-blue-500);
+          text-decoration: underline;
+        }
+
         .modal footer {
           display: flex;
           justify-content: space-between;
@@ -137,6 +147,7 @@ class DropArea extends HTMLElement {
 
     this.modal = this.shadowRoot.querySelector(".modal");
     this.dropZone = this.shadowRoot.querySelector(".drop-zone");
+    this.dropZoneUpload = this.shadowRoot.querySelector("#drop-zone-upload");
     this.dropAreaStatus = this.shadowRoot.querySelector(".drop-info-status");
     this.confirmBtn = this.shadowRoot.querySelector("button");
     this.persistFile = this.shadowRoot.querySelector("#drop-persist");
@@ -144,6 +155,10 @@ class DropArea extends HTMLElement {
     this.dropZone.addEventListener("dragover", this.onDragOver.bind(this));
     this.dropZone.addEventListener("drop", this.onFileSelect.bind(this));
     this.confirmBtn.addEventListener("click", this.onConfirm.bind(this));
+    this.dropZoneUpload.addEventListener(
+      "change",
+      this.onFileUpload.bind(this)
+    );
 
     if (this.file) {
       this.dropAreaStatus.textContent = this.file.name;
@@ -151,6 +166,13 @@ class DropArea extends HTMLElement {
       this.persistFile.removeAttribute("disabled");
       this.persistFile.checked = true;
     }
+  }
+
+  onFileUpload(e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    this.handleFileSelected(e.target.files[0]);
   }
 
   onDragOver(e) {
@@ -251,7 +273,9 @@ class DropArea extends HTMLElement {
             <section class="drop-zone">
               <h3>Drop file area</h3>
               <p>
-                <a href="#">Click to upload</a> or drag and drop your fragment shader
+                <label for="drop-zone-upload">Click to upload</label> or drag and drop your fragment shader
+
+                <input type="file" id="drop-zone-upload" />
               </p>
             </section>
             <section class="drop-info">

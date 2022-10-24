@@ -93,6 +93,11 @@ class DropArea extends HTMLElement {
           cursor: pointer;
         }
 
+        .modal footer button[disabled] {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
         .modal footer button:hover {
           background: var(--clr-blue-800);
         }
@@ -164,9 +169,12 @@ class DropArea extends HTMLElement {
 
   onFileLoaded(e) {
     this.file.data = e.target.result;
+    this.confirmBtn.removeAttribute("disabled");
   }
 
   onConfirm() {
+    if (!this.file && !this.file?.data) return;
+
     this.dispatchEvent(
       new CustomEvent("file-loaded", {
         detail: {
@@ -212,7 +220,7 @@ class DropArea extends HTMLElement {
 
           </main>
           <footer>
-            <button>Use file</button>
+            <button disabled>Use file</button>
           </footer>
           
         </section>

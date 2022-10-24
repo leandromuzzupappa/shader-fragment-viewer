@@ -3,55 +3,123 @@ class DropArea extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
 
-    this.file = null;
-    this.msg = "Load fragment shader";
+    this.file = this.getStoredFile();
+    this.msg = "No file selected";
   }
 
   static get styles() {
     return /*css*/ `
-        :host {
-          --pantone-winner-2022: #6767ab;
 
-          font-family:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          display: block;
-          padding: 0;
+        * {
           margin: 0;
+          padding: 0;
+          box-sizing: border-box;
         }
 
-        .drop-area {
+        :host {
+          --pantone-winner-2022: #6767ab;
+          --clr-neutral-100: #ffffff;
+          --clr-neutral-200: #f5f5f5;
+          --clr-neutral-300: #e0e0e0;
+          --clr-neutral-800: #333333;
+          --clr-neutral-900: #1a1a1a;
+          --clr-blue-500: #3153cb;
+          --clr-blue-800: #15266f;
+          --clr-blue-900: #111e5e;
+          --clr-peach-500: #fea858;
+
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0,0,0,.8);
+          font-family:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           display: grid;
+          width: 100%;
+          min-height: 100vh;
           place-items: center;
-          
+          background: var(--clr-blue-900);
+          color: var(--clr-neutral-900);
+        }
+
+        .modal {
+          display: block;
+          width: 100%;
+          max-width: 550px;
+          padding: 1.5rem;
+          background: var(--clr-neutral-100);
+          border-radius: 1rem;
+        }
+
+        :host(.hidden) {
+          display: none;
+        }
+
+        .modal header,
+        .modal main {
+          margin-bottom: 2rem;
+        }
+
+        .modal header h2 {
+          font-size: 1.5rem;
+          font-weight: 500;
+        }
+
+        .modal main section:nth-child(1) {
+          margin: 1rem 0;
+        }
+
+        .modal main h3 {
+          font-size: 1.25rem;
+          font-weight: 500;
+        }
+
+        .modal main p {
+          font-size: 1rem;
+          font-weight: 400;
+        }
+
+        .modal footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-top: 1px solid var(--clr-neutral-300);
+          padding-top: 1rem;
+        }
+
+        .modal footer button {
+          padding: 0.5rem 1rem;
+          background: var(--clr-blue-500);
+          color: var(--clr-neutral-100);
+          border: none;
+          border-radius: 0.25rem;
+          font-size: 1rem;
+          font-weight: 500;
+          cursor: pointer;
+        }
+
+        .modal footer button[disabled] {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .modal footer button:hover {
+          background: var(--clr-blue-800);
+        }
+
+        .modal footer button:active {
+          background: var(--clr-blue-900);
         }
 
         .drop-zone {
-          position: absolute;
-          width: 300px;
-          height: 300px;
-          background: var(--pantone-winner-2022);
-          border-radius: 10px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          min-height: 200px;
+          border: 2px dashed var(--clr-peach-500);
+          border-radius: 0.25rem;
+          cursor: pointer;
         }
+        
 
-        .drop-area-status {
-          position: relative;
-          text-align: center;
-          z-index: 1;
-          font-size: 1.5rem;
-          font-weight: 600;
-          color: #fff;
-          pointer-events: none;
-        }
-
-        .drop-area-hidden {
-          display: none;
-
-        }
+        
     `;
   }
 
@@ -62,16 +130,27 @@ class DropArea extends HTMLElement {
 
   init() {
     if (!window.FileReader) {
-      this.shadowRoot.querySelector(".drop-area-status").textContent =
-        "File API not supported";
+      this.shadowRoot.querySelector(".drop-zone").innerHTML =
+        "<h3>File API not supported</h3>";
       return;
     }
 
+    this.modal = this.shadowRoot.querySelector(".modal");
     this.dropZone = this.shadowRoot.querySelector(".drop-zone");
-    this.dropAreaStatus = this.shadowRoot.querySelector(".drop-area-status");
+    this.dropAreaStatus = this.shadowRoot.querySelector(".drop-info-status");
+    this.confirmBtn = this.shadowRoot.querySelector("button");
+    this.persistFile = this.shadowRoot.querySelector("#drop-persist");
 
     this.dropZone.addEventListener("dragover", this.onDragOver.bind(this));
     this.dropZone.addEventListener("drop", this.onFileSelect.bind(this));
+    this.confirmBtn.addEventListener("click", this.onConfirm.bind(this));
+
+    if (this.file) {
+      this.dropAreaStatus.textContent = this.file.name;
+      this.confirmBtn.removeAttribute("disabled");
+      this.persistFile.removeAttribute("disabled");
+      this.persistFile.checked = true;
+    }
   }
 
   onDragOver(e) {
@@ -89,6 +168,7 @@ class DropArea extends HTMLElement {
 
   handleFileSelected(file) {
     this.file = file;
+
     this.dropAreaStatus.textContent = file.name;
 
     const reader = new FileReader();
@@ -97,12 +177,49 @@ class DropArea extends HTMLElement {
   }
 
   onFileLoaded(e) {
-    const fileContent = e.target.result;
+    this.file.data = e.target.result;
+    this.confirmBtn.removeAttribute("disabled");
+    this.persistFile.removeAttribute("disabled");
+  }
+
+  handleStoreFile() {
+    const key = "shadercito";
+
+    if (this.persistFile.checked) {
+      const file = {
+        name: this.file.name,
+        data: this.file.data,
+      };
+
+      localStorage.setItem(key, JSON.stringify(file));
+    } else {
+      localStorage.removeItem(key);
+    }
+  }
+
+  getStoredFile() {
+    const key = "shadercito";
+
+    const file = localStorage.getItem(key);
+
+    if (file) {
+      const { name, data } = JSON.parse(file);
+
+      return { name, data };
+    }
+
+    return null;
+  }
+
+  onConfirm() {
+    if (!this.file && !this.file?.data) return;
+
+    this.handleStoreFile();
 
     this.dispatchEvent(
       new CustomEvent("file-loaded", {
         detail: {
-          fileContent,
+          fileContent: this.file.data,
         },
         bubbles: true,
         composed: true,
@@ -110,33 +227,47 @@ class DropArea extends HTMLElement {
       })
     );
 
-    /* this.shadowRoot
-      .querySelector(".drop-area")
-      .classList.add("drop-area-hidden"); */
+    this.classList.add("hidden");
   }
 
   show() {
-    this.shadowRoot
-      .querySelector(".drop-area")
-      .classList.remove("drop-area-hidden");
-
+    this.classList.remove("hidden");
     this.dropAreaStatus.textContent = this.msg;
   }
 
   hide() {
-    this.shadowRoot
-      .querySelector(".drop-area")
-      .classList.add("drop-area-hidden");
+    this.classList.add("hidden");
   }
 
   render() {
     this.shadowRoot.innerHTML = /*html*/ `
         <style>${DropArea.styles}</style>
-        <section class="drop-area">
-          <span class="drop-area-status">
-            ${this.msg}
-          </span>
-          <div class="drop-zone"></div>
+        <section class="modal">
+          <header>
+            <h2>Attach your fragment shader</h2>
+          </header>
+          <main id="modal-main" role="main">
+            
+            <section class="drop-zone">
+              <h3>Drop file area</h3>
+              <p>
+                <a href="#">Click to upload</a> or drag and drop your fragment shader
+              </p>
+            </section>
+            <section class="drop-info">
+              <h3>File info</h3>
+              <p class="drop-info-status">${this.msg}</p>
+            </section>
+
+          </main>
+          <footer>
+            <span class="drop-persist">
+              <input type="checkbox" id="drop-persist" disabled />
+              <label for="drop-persist">Persist file in browser</label>
+            </span>
+            <button disabled>Use file</button>
+          </footer>
+          
         </section>
     `;
   }

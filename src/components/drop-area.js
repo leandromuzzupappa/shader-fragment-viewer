@@ -4,7 +4,7 @@ class DropArea extends HTMLElement {
     this.attachShadow({ mode: "open" });
 
     this.file = null;
-    this.msg = "Load fragment shader";
+    this.msg = "No file selected";
   }
 
   static get styles() {
@@ -28,6 +28,7 @@ class DropArea extends HTMLElement {
           --clr-blue-900: #111e5e;
           --clr-peach-500: #fea858;
 
+          position: fixed;
           font-family:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           display: grid;
           width: 100%;
@@ -44,6 +45,10 @@ class DropArea extends HTMLElement {
           padding: 1.5rem;
           background: var(--clr-neutral-100);
           border-radius: 1rem;
+        }
+
+        :host(.hidden) {
+          display: none;
         }
 
         .modal header,
@@ -119,16 +124,19 @@ class DropArea extends HTMLElement {
 
   init() {
     if (!window.FileReader) {
-      this.shadowRoot.querySelector(".drop-area-status").textContent =
-        "File API not supported";
+      this.shadowRoot.querySelector(".drop-zone").innerHTML =
+        "<h3>File API not supported</h3>";
       return;
     }
 
+    this.modal = this.shadowRoot.querySelector(".modal");
     this.dropZone = this.shadowRoot.querySelector(".drop-zone");
-    this.dropAreaStatus = this.shadowRoot.querySelector(".drop-area-status");
+    this.dropAreaStatus = this.shadowRoot.querySelector(".drop-info-status");
+    this.confirmBtn = this.shadowRoot.querySelector("button");
 
     this.dropZone.addEventListener("dragover", this.onDragOver.bind(this));
     this.dropZone.addEventListener("drop", this.onFileSelect.bind(this));
+    this.confirmBtn.addEventListener("click", this.onConfirm.bind(this));
   }
 
   onDragOver(e) {
@@ -146,6 +154,7 @@ class DropArea extends HTMLElement {
 
   handleFileSelected(file) {
     this.file = file;
+
     this.dropAreaStatus.textContent = file.name;
 
     const reader = new FileReader();
@@ -154,12 +163,14 @@ class DropArea extends HTMLElement {
   }
 
   onFileLoaded(e) {
-    const fileContent = e.target.result;
+    this.file.data = e.target.result;
+  }
 
+  onConfirm() {
     this.dispatchEvent(
       new CustomEvent("file-loaded", {
         detail: {
-          fileContent,
+          fileContent: this.file.data,
         },
         bubbles: true,
         composed: true,
@@ -167,29 +178,22 @@ class DropArea extends HTMLElement {
       })
     );
 
-    /* this.shadowRoot
-      .querySelector(".drop-area")
-      .classList.add("drop-area-hidden"); */
+    this.classList.add("hidden");
   }
 
   show() {
-    this.shadowRoot
-      .querySelector(".drop-area")
-      .classList.remove("drop-area-hidden");
-
+    this.classList.remove("hidden");
     this.dropAreaStatus.textContent = this.msg;
   }
 
   hide() {
-    this.shadowRoot
-      .querySelector(".drop-area")
-      .classList.add("drop-area-hidden");
+    this.classList.add("hidden");
   }
 
   render() {
     this.shadowRoot.innerHTML = /*html*/ `
         <style>${DropArea.styles}</style>
-        <section class="modal modal-drop">
+        <section class="modal">
           <header>
             <h2>Attach your fragment shader</h2>
           </header>
@@ -203,6 +207,7 @@ class DropArea extends HTMLElement {
             </section>
             <section class="drop-info">
               <h3>File info</h3>
+              <p class="drop-info-status">${this.msg}</p>
             </section>
 
           </main>

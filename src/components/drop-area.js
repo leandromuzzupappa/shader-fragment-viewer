@@ -3,7 +3,7 @@ class DropArea extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
 
-    this.file = null;
+    this.file = this.getStoredFile();
     this.msg = "No file selected";
   }
 
@@ -77,7 +77,8 @@ class DropArea extends HTMLElement {
 
         .modal footer {
           display: flex;
-          justify-content: flex-end;
+          justify-content: space-between;
+          align-items: center;
           border-top: 1px solid var(--clr-neutral-300);
           padding-top: 1rem;
         }
@@ -138,10 +139,18 @@ class DropArea extends HTMLElement {
     this.dropZone = this.shadowRoot.querySelector(".drop-zone");
     this.dropAreaStatus = this.shadowRoot.querySelector(".drop-info-status");
     this.confirmBtn = this.shadowRoot.querySelector("button");
+    this.persistFile = this.shadowRoot.querySelector("#drop-persist");
 
     this.dropZone.addEventListener("dragover", this.onDragOver.bind(this));
     this.dropZone.addEventListener("drop", this.onFileSelect.bind(this));
     this.confirmBtn.addEventListener("click", this.onConfirm.bind(this));
+
+    if (this.file) {
+      this.dropAreaStatus.textContent = this.file.name;
+      this.confirmBtn.removeAttribute("disabled");
+      this.persistFile.removeAttribute("disabled");
+      this.persistFile.checked = true;
+    }
   }
 
   onDragOver(e) {
@@ -170,10 +179,42 @@ class DropArea extends HTMLElement {
   onFileLoaded(e) {
     this.file.data = e.target.result;
     this.confirmBtn.removeAttribute("disabled");
+    this.persistFile.removeAttribute("disabled");
+  }
+
+  handleStoreFile() {
+    const key = "shadercito";
+
+    if (this.persistFile.checked) {
+      const file = {
+        name: this.file.name,
+        data: this.file.data,
+      };
+
+      localStorage.setItem(key, JSON.stringify(file));
+    } else {
+      localStorage.removeItem(key);
+    }
+  }
+
+  getStoredFile() {
+    const key = "shadercito";
+
+    const file = localStorage.getItem(key);
+
+    if (file) {
+      const { name, data } = JSON.parse(file);
+
+      return { name, data };
+    }
+
+    return null;
   }
 
   onConfirm() {
     if (!this.file && !this.file?.data) return;
+
+    this.handleStoreFile();
 
     this.dispatchEvent(
       new CustomEvent("file-loaded", {
@@ -220,6 +261,10 @@ class DropArea extends HTMLElement {
 
           </main>
           <footer>
+            <span class="drop-persist">
+              <input type="checkbox" id="drop-persist" disabled />
+              <label for="drop-persist">Persist file in browser</label>
+            </span>
             <button disabled>Use file</button>
           </footer>
           

@@ -1,6 +1,7 @@
 import App from "./three/App";
 import * as monaco from "monaco-editor";
 import monacoStyles from "../assets/styles/editor.main.css";
+import background from "../assets/demo-shaders/background.frag?raw";
 
 class ShaderViewer extends HTMLElement {
   static get styles() {
@@ -23,6 +24,7 @@ class ShaderViewer extends HTMLElement {
         height: 100vh;
       }
 
+
       .shader-viewer {
         position: relative;
         width: 100%;
@@ -42,6 +44,10 @@ class ShaderViewer extends HTMLElement {
         text-align: center;
         opacity: .5;
         transition: opacity .3s ease;
+      }
+
+      .actions.hidden {
+        opacity: 0;
       }
 
       .actions:hover {
@@ -106,11 +112,12 @@ class ShaderViewer extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
 
-    this.fragmentShader = null;
+    this.fragmentShader = background;
   }
 
   connectedCallback() {
     this.render();
+    this.init();
 
     this.shadowRoot.addEventListener(
       "file-loaded",
@@ -123,6 +130,7 @@ class ShaderViewer extends HTMLElement {
     this.app = new App(canvas, this.fragmentShader);
 
     this.dropArea = this.shadowRoot.querySelector("drop-area");
+    this.actions = this.shadowRoot.querySelector(".actions");
     this.editShaderBtn = this.shadowRoot.querySelector(".edit-shader--btn");
     this.loadShaderBtn = this.shadowRoot.querySelector(".load-shader--btn");
     this.editPanel = this.shadowRoot.querySelector(".shader-edit");
@@ -156,7 +164,10 @@ class ShaderViewer extends HTMLElement {
         this.app.mesh.updateFragment(this.fragmentShader);
       }
 
-      // this.textarea.value = this.fragmentShader;
+      this.actions.classList.remove("hidden");
+
+      // update monaco editor
+      this.editor.setValue(this.fragmentShader);
     }
   }
 
@@ -172,7 +183,7 @@ class ShaderViewer extends HTMLElement {
   }
 
   initMonaco() {
-    const editor = monaco.editor.create(
+    this.editor = monaco.editor.create(
       this.shadowRoot.querySelector(".editor"),
       {
         value: this.fragmentShader,
@@ -181,11 +192,8 @@ class ShaderViewer extends HTMLElement {
       }
     );
 
-    console.log(editor);
-
-    // listen for changes in code
-    editor.onDidChangeModelContent((e) => {
-      const value = editor.getValue();
+    this.editor.onDidChangeModelContent((e) => {
+      const value = this.editor.getValue();
       this.fragmentShader = value;
 
       this.app.mesh.updateFragment(this.fragmentShader);
@@ -198,7 +206,7 @@ class ShaderViewer extends HTMLElement {
       <div class="shader-viewer">
       <drop-area></drop-area>
         
-        <div class="actions">
+        <div class="actions hidden">
           <h2>Actions</h2>
           <ul>
             <li><button class="edit-shader--btn">Edit shader</button></li>

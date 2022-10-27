@@ -34,7 +34,7 @@ class DropArea extends HTMLElement {
           width: 100%;
           min-height: 100vh;
           place-items: center;
-          background: var(--clr-blue-900);
+          background: transparent;
           color: var(--clr-neutral-900);
           z-index: 1;
         }

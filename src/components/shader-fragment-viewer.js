@@ -72,6 +72,7 @@ class ShaderViewer extends HTMLElement {
         gap: 1rem;
         transition: .2s;
         opacity: .8;
+        border-left: 1px solid #e7e7e7;
       }
 
       .shader-edit:hover {
@@ -123,13 +124,6 @@ class ShaderViewer extends HTMLElement {
       "file-loaded",
       this.onFileDropped.bind(this)
     );
-
-    /* document.addEventListener("keydown", (e) => {
-      if (e.key === "o") {
-        const dropArea = this.shadowRoot.querySelector("drop-area");
-        dropArea.show();
-      }
-    }); */
   }
 
   init() {
@@ -164,7 +158,13 @@ class ShaderViewer extends HTMLElement {
       const dropArea = this.shadowRoot.querySelector("drop-area");
       dropArea.hide();
 
-      this.init();
+      if (!this.app) {
+        this.init();
+      } else {
+        this.app.mesh.updateFragment(this.fragmentShader);
+      }
+
+      this.textarea.value = this.fragmentShader;
     }
   }
 
@@ -183,7 +183,7 @@ class ShaderViewer extends HTMLElement {
     this.shadowRoot.innerHTML = /*html*/ `
       <style>${ShaderViewer.styles}</style>
       <div class="shader-viewer">
-        <drop-area class="hidden"></drop-area>
+      <drop-area class="hidden"></drop-area>
         
         <div class="actions">
           <h2>Actions</h2>
@@ -198,7 +198,7 @@ class ShaderViewer extends HTMLElement {
           <button class="shader-edit--btn">
             X
           </button>
-          <textarea>${this.fragmentShader}</textarea>
+          <textarea></textarea>
         </section>
         
         <canvas class="pepitos"></canvas>

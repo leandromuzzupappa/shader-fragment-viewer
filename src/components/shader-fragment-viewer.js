@@ -1,8 +1,12 @@
 import App from "./three/App";
+import * as monaco from "monaco-editor";
+import monacoStyles from "../assets/styles/editor.main.css";
 
 class ShaderViewer extends HTMLElement {
   static get styles() {
     return /*css*/ `
+      ${monacoStyles}
+
       :host {
         display: block;
         font-family:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -63,21 +67,16 @@ class ShaderViewer extends HTMLElement {
         right: 0;
         transform: translate(0%);
         width: 100%;
-        max-width: 300px;
+        max-width: 40vw;
         height: 100vh;
         background: #fff;
         padding: 1rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        transition: .2s;
-        opacity: .8;
-        border-left: 1px solid #e7e7e7;
       }
 
-      .shader-edit:hover {
-        opacity: 1;
+      .shader-edit h2 {
+        margin-bottom: 1rem;
       }
+
 
       .shader-edit.hidden {
         transform: translate(100%);
@@ -93,10 +92,11 @@ class ShaderViewer extends HTMLElement {
         cursor: pointer;
       }
 
-
-      .shader-edit textarea {
+      .shader-edit .editor {
+        position: relative;
+        left: 0;
         width: 100%;
-        height: 90%;
+        height: 95%;
       }
 
     `;
@@ -106,19 +106,11 @@ class ShaderViewer extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
 
-    this.fragmentShader = this.zzzzzz();
-  }
-
-  zzzzzz() {
-    return `#ifdef GL_ES
-    precision mediump float;
-    #endif
-    uniform vec2 u_resolution;uniform float u_time;const int ammount = 12;void main() {vec2 coord = 20.0 * (gl_FragCoord.xy - u_resolution / 2.0) / min(u_resolution.y, u_resolution.x);float len;for(int i = 0; i < ammount; i++){len = length(vec2(coord.x, coord.y));coord.x = coord.x - cos(coord.y + sin(len)) + cos(u_time / 9.0);coord.y = coord.y + sin(coord.x + cos(len)) + sin(u_time / 12.0);}gl_FragColor = vec4(cos(len * 2.3), cos(len - .3), cos(len - .1), 1.1);}`;
+    this.fragmentShader = null;
   }
 
   connectedCallback() {
     this.render();
-    this.init();
 
     this.shadowRoot.addEventListener(
       "file-loaded",
@@ -135,7 +127,6 @@ class ShaderViewer extends HTMLElement {
     this.loadShaderBtn = this.shadowRoot.querySelector(".load-shader--btn");
     this.editPanel = this.shadowRoot.querySelector(".shader-edit");
     this.closeEditPannel = this.shadowRoot.querySelector(".shader-edit--btn");
-    this.textarea = this.shadowRoot.querySelector("textarea");
 
     this.editShaderBtn.addEventListener(
       "click",
@@ -145,7 +136,8 @@ class ShaderViewer extends HTMLElement {
       "click",
       this.toggleEditPanel.bind(this)
     );
-    this.textarea.addEventListener("input", this.onEditShader.bind(this));
+
+    this.initMonaco();
 
     this.loadShaderBtn.addEventListener("click", () => this.dropArea.show());
   }
@@ -164,7 +156,7 @@ class ShaderViewer extends HTMLElement {
         this.app.mesh.updateFragment(this.fragmentShader);
       }
 
-      this.textarea.value = this.fragmentShader;
+      // this.textarea.value = this.fragmentShader;
     }
   }
 
@@ -179,11 +171,32 @@ class ShaderViewer extends HTMLElement {
     this.app.mesh.updateFragment(this.fragmentShader);
   }
 
+  initMonaco() {
+    const editor = monaco.editor.create(
+      this.shadowRoot.querySelector(".editor"),
+      {
+        value: this.fragmentShader,
+        language: "glsl",
+        theme: "vs-dark",
+      }
+    );
+
+    console.log(editor);
+
+    // listen for changes in code
+    editor.onDidChangeModelContent((e) => {
+      const value = editor.getValue();
+      this.fragmentShader = value;
+
+      this.app.mesh.updateFragment(this.fragmentShader);
+    });
+  }
+
   render() {
     this.shadowRoot.innerHTML = /*html*/ `
       <style>${ShaderViewer.styles}</style>
       <div class="shader-viewer">
-      <drop-area class="hidden"></drop-area>
+      <drop-area></drop-area>
         
         <div class="actions">
           <h2>Actions</h2>
@@ -198,7 +211,8 @@ class ShaderViewer extends HTMLElement {
           <button class="shader-edit--btn">
             X
           </button>
-          <textarea></textarea>
+          
+          <div class="editor"></div>
         </section>
         
         <canvas class="pepitos"></canvas>

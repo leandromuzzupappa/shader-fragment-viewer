@@ -53,6 +53,11 @@ export default class Mesh {
     this.uniforms.u_mouse.value.y = event.clientY;
   }
 
+  updateFragment(fragment) {
+    this.material.fragmentShader = fragment;
+    this.material.needsUpdate = true;
+  }
+
   update() {
     this.uniforms.u_time.value += this.time.delta / 150;
   }

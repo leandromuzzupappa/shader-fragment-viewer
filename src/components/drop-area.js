@@ -1,3 +1,22 @@
+const demos = [
+  "background",
+  "circle_color_pulse",
+  "circle_shape",
+  "color",
+  "morph_grid",
+  "morphing_grid_boxes",
+  "mouse",
+  "moving_light",
+  "polygon_shape",
+  "rainbow_swirl",
+  "test",
+  "warp_grid",
+  "warp_lines",
+  "watercolor",
+  "watercolor_v2",
+  "wave_draw_lines",
+];
+
 class DropArea extends HTMLElement {
   constructor() {
     super();
@@ -128,9 +147,14 @@ class DropArea extends HTMLElement {
           border-radius: 0.25rem;
           cursor: pointer;
         }
-        
 
-        
+        .drop-demos {
+          margin-top: 1rem;
+        }
+
+        .drop-demos h3 {
+          margin-bottom: .5rem;
+        }
     `;
   }
 
@@ -152,6 +176,7 @@ class DropArea extends HTMLElement {
     this.dropAreaStatus = this.shadowRoot.querySelector(".drop-info-status");
     this.confirmBtn = this.shadowRoot.querySelector("button");
     this.persistFile = this.shadowRoot.querySelector("#drop-persist");
+    this.select = this.shadowRoot.querySelector(".drop-demos-select");
 
     this.dropZone.addEventListener("dragover", this.onDragOver.bind(this));
     this.dropZone.addEventListener("drop", this.onFileSelect.bind(this));
@@ -160,6 +185,24 @@ class DropArea extends HTMLElement {
       "change",
       this.onFileUpload.bind(this)
     );
+
+    this.select.addEventListener("change", async () => {
+      try {
+        const aa = await import(
+          `../assets/demo-shaders/${this.select.value}.frag?raw`
+        );
+
+        this.file = {
+          name: this.select.value,
+          data: aa.default,
+        };
+
+        this.confirmBtn.removeAttribute("disabled");
+        this.persistFile.removeAttribute("disabled");
+      } catch (error) {
+        alert(error);
+      }
+    });
 
     if (this.file) {
       this.dropAreaStatus.textContent = this.file.name;
@@ -282,6 +325,15 @@ class DropArea extends HTMLElement {
             <section class="drop-info">
               <h3>File info</h3>
               <p class="drop-info-status">${this.msg}</p>
+            </section>
+
+            <section class="drop-demos">
+              <h3>Or use one of the demos</h3>
+              <select class="drop-demos-select">
+                ${demos.map(
+                  (demo) => `<option value="${demo}">${demo}</option>`
+                )};
+              </select>
             </section>
 
           </main>
